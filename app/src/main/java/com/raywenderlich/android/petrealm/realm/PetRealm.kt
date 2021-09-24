@@ -2,6 +2,8 @@ package com.raywenderlich.android.petrealm.realm
 
 import androidx.annotation.DrawableRes
 import io.realm.RealmObject
+import io.realm.RealmResults
+import io.realm.annotations.LinkingObjects
 import io.realm.annotations.PrimaryKey
 import io.realm.annotations.Required
 import org.bson.types.ObjectId
@@ -13,6 +15,9 @@ import org.bson.types.ObjectId
 4. @Required indicates the field requires a value. Add this annotation to name and petType.
 5. For fields that allow null values, you can use nullable types and assign null as its default value.
 6. Each entity must be a RealmObject().
+7. Add @LinkingObjects annotation, passing as parameter the name of the field you’re adding the
+   relationship to. The field in OwnerRealm you want to link is pets.
+8. The field should be val and of type RealmResults.
  */
 
 // 1.
@@ -26,5 +31,7 @@ open class PetRealm(
     var age: Int = 0,
     var isAdopted: Boolean = false,
     @DrawableRes
-    var image: Int? = null      // 5.
+    var image: Int? = null,      // 5.
+    @LinkingObjects("pets") // 7.
+    val owner: RealmResults<OwnerRealm>? = null // 8.
 ): RealmObject()        // 6.

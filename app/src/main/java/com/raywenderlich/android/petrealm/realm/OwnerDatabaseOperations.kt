@@ -37,6 +37,7 @@ package com.raywenderlich.android.petrealm.realm
 import com.raywenderlich.android.petrealm.owners.models.Owner
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import io.realm.Sort
 import io.realm.kotlin.executeTransactionAwait
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
@@ -84,12 +85,14 @@ class OwnerDatabaseOperations @Inject constructor(
         .where(OwnerRealm::class.java)
         // 4.
         .findAll()
+        .sort("name", Sort.ASCENDING)
         // 5.
         .map { owner ->
           Owner(
             name = owner.name,
             image = owner.image,
-            id = owner.id
+            id = owner.id,
+            numberOfPets = getPetCount(realmTransaction, owner.id)
           )
         }
       )
@@ -104,5 +107,17 @@ class OwnerDatabaseOperations @Inject constructor(
 
   suspend fun removeOwner(ownerId: String) {
 
+  }
+
+  /**
+  1. Query the realm to get PetRealm objects.
+  2. Use owner.id to filter by owner ID.
+  3. Count the number of pets the owner has using .count()
+   */
+  private fun getPetCount(realm: Realm, ownerId: String): Long {
+    return realm
+      .where(PetRealm::class.java)  // 1.
+      .equalTo("owner.id", ownerId)   // 2.
+      .count()    // 3.
   }
 }
