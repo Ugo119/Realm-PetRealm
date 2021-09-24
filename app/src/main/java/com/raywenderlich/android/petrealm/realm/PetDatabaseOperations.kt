@@ -84,6 +84,7 @@ class PetDatabaseOperations @Inject constructor(
     realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->   // 2.
       petsToAdopt.addAll(realmTransaction
         .where(PetRealm::class.java)    // 3.
+        .equalTo("isAdopted", false)
         .findAll()    // 4.
         // 5.
         .map {
@@ -96,7 +97,19 @@ class PetDatabaseOperations @Inject constructor(
   }
 
   suspend fun retrieveAdoptedPets(): List<Pet> {
+    val realm = Realm.getInstance(config)
     val adoptedPets = mutableListOf<Pet>()
+
+    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+      adoptedPets.addAll(realmTransaction
+        .where(PetRealm::class.java)
+        .equalTo("isAdopted", true)
+        .findAll()
+        .map {
+          mapPet(it)
+        }
+      )
+    }
 
     return adoptedPets
   }
@@ -105,8 +118,30 @@ class PetDatabaseOperations @Inject constructor(
 
   }
 
+  /**
+  This code executes a transaction to retrieve PetRealm objects. The filtering works the following way:
+
+  1. Condition to filter PetRealm objects that have isAdopted as false.
+  2. and() is a logical operator that indicates the result should meet both conditions.
+  Here you can find a list of all the logical operators Realm supports.
+  3. Condition to filter PetRealm objects that have their petType field with the provided value.
+   */
   suspend fun retrieveFilteredPets(petType: String): List<Pet> {
+    val realm = Realm.getInstance(config)
     val filteredPets = mutableListOf<Pet>()
+
+    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+      filteredPets.addAll(realmTransaction
+        .where(PetRealm::class.java)
+        .equalTo("isAdopted", false)  // 1.
+        .and()  // 2.
+        .beginsWith("petType", petType) // 3.
+        .findAll()
+        .map {
+          mapPet(it)
+        }
+      )
+    }
 
     return filteredPets
   }

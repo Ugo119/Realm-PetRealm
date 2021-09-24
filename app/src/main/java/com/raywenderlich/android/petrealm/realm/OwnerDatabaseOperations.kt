@@ -62,6 +62,16 @@ class OwnerDatabaseOperations @Inject constructor(
 
   }
 
+  /**
+  To retrieve the owners, you:
+
+  1. Get the Realm instance.
+  2. Use executeTransactionAwait().
+  3. Use where(OwnerRealm::class.java) to retrieve OwnerRealm objects.
+  4. findAll() executes the query.
+  5. Map OwnerRealm to Owner objects.
+   */
+
   suspend fun retrieveOwners(): List<Owner> {
     // 1.
     val realm = Realm.getInstance(config)
